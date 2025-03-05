@@ -49,7 +49,7 @@ def inverse_kinematics(roll: float, pitch: float, height: float) -> np.ndarray:
         height (float): The height value of the platform in [mm].
 
     Returns:
-        np.ndarray: The normalized difference between the transformed and original platform points (joint distances).
+        servo angles (np.ndarray): Servo angles in degrees
     """
     
     a = np.array([
@@ -65,4 +65,9 @@ def inverse_kinematics(roll: float, pitch: float, height: float) -> np.ndarray:
     
     S_mat_norm = np.linalg.norm(transformed_b - a, axis=1)
 
-    return S_mat_norm
+    servo_angles = np.degrees(np.arccos((S_mat_norm**2 - 2*35**2)/(-2*35**2))/2)
+
+    return servo_angles
+
+
+inverse_kinematics(5, 0, 50)
