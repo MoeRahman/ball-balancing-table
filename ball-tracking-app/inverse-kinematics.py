@@ -2,7 +2,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import typing
+from typing import Any
+
 
 def rotation_matrix(roll: float, pitch: float) -> np.ndarray:
     """
@@ -19,7 +20,7 @@ def rotation_matrix(roll: float, pitch: float) -> np.ndarray:
     Returns:
     np.ndarray: The 3x3 rotation matrix resulting from the combined roll and pitch rotations.
     """
-    
+
     roll = np.radians(roll)
     pitch = np.radians(pitch)
     
@@ -36,3 +37,32 @@ def rotation_matrix(roll: float, pitch: float) -> np.ndarray:
     ])
     
     return R_x @ R_y
+
+
+def inverse_kinematics(roll: float, pitch: float, height: float) -> np.ndarray:
+    """
+    Calculates the primary joint angles for a 3RRS platform robot.
+
+    Args:
+        roll (float): The roll angle in radians.
+        pitch (float): The pitch angle in radians.
+        height (float): The height value of the platform in [mm].
+
+    Returns:
+        np.ndarray: The normalized difference between the transformed and original platform points (joint distances).
+    """
+    
+    a = np.array([
+        [0, 50, 0],
+        [50 * np.sin(np.radians(60)), -50 * np.cos(np.radians(60)), 0],
+        [-50 * np.sin(np.radians(60)), -50 * np.cos(np.radians(60)), 0]
+    ])
+    
+    b = a.copy()
+    R = rotation_matrix(roll, pitch)
+    P = np.array([0, 0, height])
+    transformed_b = (R @ b.T).T + P
+    
+    S_mat_norm = np.linalg.norm(transformed_b - a, axis=1)
+
+    return S_mat_norm
