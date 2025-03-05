@@ -39,7 +39,7 @@ def rotation_matrix(roll: float, pitch: float) -> np.ndarray:
     return R_x @ R_y
 
 
-def inverse_kinematics(roll: float, pitch: float, height: float) -> np.ndarray:
+def calculate(roll: float, pitch: float, height: float) -> np.ndarray:
     """
     Calculates the primary joint angles for a 3RRS platform robot.
 
