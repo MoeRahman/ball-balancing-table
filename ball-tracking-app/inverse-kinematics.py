@@ -68,6 +68,3 @@ def inverse_kinematics(roll: float, pitch: float, height: float) -> np.ndarray:
     servo_angles = np.degrees(np.arccos((S_mat_norm**2 - 2*35**2)/(-2*35**2))/2)
 
     return servo_angles
-
-
-inverse_kinematics(5, 0, 50)
