@@ -5,11 +5,34 @@ import cv2 as cv
 import numpy as np
 import inverseKinematics as ik
 import serial
+from serial.tools.list_ports import comports
+import time
 
 
 def main() -> None:
 
     videoCapture = cv.VideoCapture(1)
+
+    for portItem in comports():
+        print(portItem)
+
+    arduinoSerial = serial.Serial(port='COM3', baudrate=115200, timeout=0.5)
+
+    arduinoSerial.open()
+    serial_message = f'{float(servoAngles[0]),float(servoAngles[1]),float(servoAngles[2])}'
+    serial_message = 12
+    str_serial_message = str(serial_message)
+    arduinoSerial.write(bytes(str_serial_message, 'utf-8'))
+    
+    time.sleep(seconds = 0.01)
+
+    readLine = arduinoSerial.readline()
+    stringLine = readLine.decode('utf-8')
+    receivedInteger =int(stringLine)
+
+    print(receivedInteger)
+
+    arduinoSerial.close()
 
     while True:
         ret, ballCoordinate = ball.track(videoCapture)
@@ -30,10 +53,6 @@ def main() -> None:
 
             servo_angles = ik.calculate(roll=roll_err, pitch=pitch_err, height=height)
             servoAngles = np.around(servo_angles, decimals=2)
-            
-            serial_message = f'{float(servoAngles[0]),float(servoAngles[1]),float(servoAngles[2])}'
-
-
             
             #cv.putText(img=frame, text=coordinate_display, org=(ballCoordinate[0]+220, ballCoordinate[1]+200), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
 
