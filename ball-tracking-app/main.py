@@ -12,27 +12,9 @@ import time
 def main() -> None:
 
     videoCapture = cv.VideoCapture(1)
-
-    for portItem in comports():
-        print(portItem)
-
-    arduinoSerial = serial.Serial(port='COM3', baudrate=115200, timeout=0.5)
-
+    arduinoSerial = serial.Serial(port='COM3', baudrate=9600, timeout=0.1)
+    if(arduinoSerial.is_open): arduinoSerial.close()
     arduinoSerial.open()
-    serial_message = f'{float(servoAngles[0]),float(servoAngles[1]),float(servoAngles[2])}'
-    serial_message = 12
-    str_serial_message = str(serial_message)
-    arduinoSerial.write(bytes(str_serial_message, 'utf-8'))
-    
-    time.sleep(seconds = 0.01)
-
-    readLine = arduinoSerial.readline()
-    stringLine = readLine.decode('utf-8')
-    receivedInteger =int(stringLine)
-
-    print(receivedInteger)
-
-    arduinoSerial.close()
 
     while True:
         ret, ballCoordinate = ball.track(videoCapture)
@@ -47,24 +29,46 @@ def main() -> None:
             coordinate_display = f'{ballCoordinate[0]}, {ballCoordinate[1]}'
 
             origin = [0, 0]
-            roll_err = origin[0] - 0.025*ballCoordinate[1]
-            pitch_err = origin[1] - 0.025*ballCoordinate[0]
+            roll_err = origin[0] - 0.25*ballCoordinate[1]
+            pitch_err = origin[1] - 0.25*ballCoordinate[0]
             height = 50
 
             servo_angles = ik.calculate(roll=roll_err, pitch=pitch_err, height=height)
             servoAngles = np.around(servo_angles, decimals=2)
-            
-            #cv.putText(img=frame, text=coordinate_display, org=(ballCoordinate[0]+220, ballCoordinate[1]+200), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
+
+            serial_message = ",".join([str(float(val)) for val in servoAngles])
+            print(serial_message)
+            arduinoSerial.write(serial_message.encode('utf-8'))
+            arduinoSerial.write(b'\n')
+
+            time.sleep(0.01)
+
+            # if arduinoSerial.in_waiting > 0:  # Check if there is data available to read
+            #     returnMessage = arduinoSerial.readline().decode('utf-8')
+
+            #     try:
+            #         # Split the string by commas and convert to floats
+            #         float_values = [float(val) for val in returnMessage.split(',')]
+            #         print("Parsed values:", float_values)
+            #     except ValueError:
+            #         print("Error parsing float values")
+
+            cv.putText(img=frame, text=coordinate_display, org=(ballCoordinate[0]+220, ballCoordinate[1]+200), 
+                       fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
 
         # # Outline of the platform
         cv.circle(img=frame, center=(200, 200), radius=190, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
+        cv.circle(img=frame, center=(200, 200), radius=1, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
 
         # # DISPLAY IMAGE
         cv.imshow('video-raw', frame)
 
         # Quit program
         if cv.waitKey(1) & 0xFF == ord('q'):
+            arduinoSerial.close()
             break
+
+    
 
     videoCapture.release()
     cv.destroyAllWindows()

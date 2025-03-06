@@ -11,14 +11,57 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
 
 void setup() {
-  Serial.begin(115200);
-  pinMode(13, OUTPUT);
+  Serial.begin(9600);
+  pinMode(12, OUTPUT);
+
+  pwm.begin();
+  pwm.setOscillatorFrequency(27000000);
+  pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
+
+  pwm.writeMicroseconds(0, 1050);
+  pwm.writeMicroseconds(1, 1050);
+  pwm.writeMicroseconds(2, 1050);
+  delay(1000);
+  pwm.writeMicroseconds(0, 1350);
+  pwm.writeMicroseconds(1, 1350);
+  pwm.writeMicroseconds(2, 1350);
+  delay(1000);
+
+
+
 
 }
 
 
 void loop() {
-  
+  if (Serial.available() > 0) {
+    // Read incoming data until newline
+    String data = Serial.readStringUntil('\n');
+    
+    // Split the string into individual float values using commas
+    int firstComma = data.indexOf(',');
+    int secondComma = data.indexOf(',', firstComma + 1);
+
+    // Extract the three float values
+    float value1 = data.substring(0, firstComma).toFloat();
+    float value2 = data.substring(firstComma + 1, secondComma).toFloat();
+    float value3 = data.substring(secondComma + 1).toFloat();
+
+    if(value1 >= 75){value1 = 75;}
+    if(value2 >= 75){value2 = 75;}
+    if(value3 >= 75){value3 = 75;}
+
+    if(value1 <= 45){value1 = 45;}
+    if(value2 <= 45){value2 = 45;}
+    if(value3 <= 45){value3 = 45;}
 
 
+    pwm.writeMicroseconds(0, map(value1, 0, 180, 600, 2400));
+    pwm.writeMicroseconds(1, map(value2, 0, 180, 600, 2400));
+    pwm.writeMicroseconds(2, map(value3, 0, 180, 600, 2400));
+
+    // Send back the modified values as a comma-separated string
+    //String result = String(value1, 3) + "," + String(value2, 3) + "," + String(value3, 3);
+    //Serial.println(result);  // Send the modified values to Python
+  }
 }
