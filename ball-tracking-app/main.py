@@ -2,8 +2,9 @@
 
 import ballTracking as ball
 import cv2 as cv
-import numpy as np
 import inverseKinematics as ik
+import math
+import numpy as np
 import serial
 from serial.tools.list_ports import comports
 import time
@@ -12,6 +13,7 @@ import time
 def main() -> None:
 
     videoCapture = cv.VideoCapture(1)
+
     arduinoSerial = serial.Serial(port='COM3', baudrate=9600, timeout=0.1)
     if(arduinoSerial.is_open): arduinoSerial.close()
     arduinoSerial.open()
@@ -29,29 +31,22 @@ def main() -> None:
             coordinate_display = f'{ballCoordinate[0]}, {ballCoordinate[1]}'
 
             origin = [0, 0]
-            roll_err = origin[0] - 0.25*ballCoordinate[1]
-            pitch_err = origin[1] - 0.25*ballCoordinate[0]
+            roll_err = origin[0] - 0.05*ballCoordinate[1]
+            pitch_err = origin[1] - 0.05*ballCoordinate[0]
             height = 50
 
             servo_angles = ik.calculate(roll=roll_err, pitch=pitch_err, height=height)
             servoAngles = np.around(servo_angles, decimals=2)
 
+            servoAngles = [90.0 if math.isnan(val) else val for val in servoAngles]
+                
+            # Serial Communication
             serial_message = ",".join([str(float(val)) for val in servoAngles])
             print(serial_message)
             arduinoSerial.write(serial_message.encode('utf-8'))
             arduinoSerial.write(b'\n')
 
             time.sleep(0.01)
-
-            # if arduinoSerial.in_waiting > 0:  # Check if there is data available to read
-            #     returnMessage = arduinoSerial.readline().decode('utf-8')
-
-            #     try:
-            #         # Split the string by commas and convert to floats
-            #         float_values = [float(val) for val in returnMessage.split(',')]
-            #         print("Parsed values:", float_values)
-            #     except ValueError:
-            #         print("Error parsing float values")
 
             cv.putText(img=frame, text=coordinate_display, org=(ballCoordinate[0]+220, ballCoordinate[1]+200), 
                        fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
