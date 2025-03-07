@@ -1,8 +1,8 @@
 
 
-import ballTracking as ball
+import ball_tracking as ball
 import cv2 as cv
-import inverseKinematics as ik
+import inverse_kinematics as ik
 import math
 import numpy as np
 import serial
@@ -31,11 +31,16 @@ def main() -> None:
             coordinate_display = f'{ballCoordinate[0]}, {ballCoordinate[1]}'
 
             origin = [0, 0]
-            roll_err = origin[0] - 0.05*ballCoordinate[1]
-            pitch_err = origin[1] - 0.05*ballCoordinate[0]
-            height = 50
+            roll_err = origin[0] - ballCoordinate[1]
+            pitch_err = origin[1] - ballCoordinate[0]
+            height = 40
 
-            servo_angles = ik.calculate(roll=roll_err, pitch=pitch_err, height=height)
+            Kp = 0.075
+
+            roll_out = Kp*roll_err
+            pitch_out = Kp*roll_err
+
+            servo_angles = ik.calculate_joint_angles(roll=roll_out, pitch=pitch_out, height=height)
             servoAngles = np.around(servo_angles, decimals=2)
 
             servoAngles = [90.0 if math.isnan(val) else val for val in servoAngles]
@@ -48,10 +53,11 @@ def main() -> None:
 
             time.sleep(0.01)
 
+            cv.circle(img=frame, center=(ballCoordinate[0]+200, ballCoordinate[1]+200), radius=2, color=(255,0,255), lineType=cv.LINE_AA, thickness=1)
             cv.putText(img=frame, text=coordinate_display, org=(ballCoordinate[0]+220, ballCoordinate[1]+200), 
                        fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
 
-        # # Outline of the platform
+        # # Outline of the platform and center frame
         cv.circle(img=frame, center=(200, 200), radius=190, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
         cv.circle(img=frame, center=(200, 200), radius=1, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
 
