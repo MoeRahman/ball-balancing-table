@@ -37,7 +37,7 @@ def track(capture:Type[cv.VideoCapture]) -> Tuple[bool, np.ndarray]:
 
     # Detect Circle using HoughCircles
     circles = cv.HoughCircles(gaussian_blur, cv.HOUGH_GRADIENT, dp=1.2, minDist=500, 
-                              param1=100, param2=30, minRadius=10, maxRadius=60)
+                              param1=80, param2=15, minRadius=10, maxRadius=20)
     
     if circles is not None:
         circles = np.uint16(np.around(circles))
