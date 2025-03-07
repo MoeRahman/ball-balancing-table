@@ -1,0 +1,10 @@
+# PlatformIO files
+.pio
+ball-balancing-robot/.vscode/.browse.c_cpp.db*
+ball-balancing-robot/.vscode/c_cpp_properties.json
+ball-balancing-robot/.vscode/launch.json
+ball-balancing-robot/.vscode/ipch
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
