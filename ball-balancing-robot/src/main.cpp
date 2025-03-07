@@ -18,14 +18,14 @@ void setup() {
   pwm.setOscillatorFrequency(27000000);
   pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
 
-  pwm.writeMicroseconds(0, 1050);
-  pwm.writeMicroseconds(1, 1050);
-  pwm.writeMicroseconds(2, 1050);
-  delay(1000);
+  pwm.writeMicroseconds(0, 850);
+  pwm.writeMicroseconds(1, 850);
+  pwm.writeMicroseconds(2, 850);
+  delay(2500);
   pwm.writeMicroseconds(0, 1350);
   pwm.writeMicroseconds(1, 1350);
   pwm.writeMicroseconds(2, 1350);
-  delay(1000);
+  delay(2500);
 
 
 
@@ -51,9 +51,9 @@ void loop() {
     if(value2 >= 75){value2 = 75;}
     if(value3 >= 75){value3 = 75;}
 
-    if(value1 <= 45){value1 = 45;}
-    if(value2 <= 45){value2 = 45;}
-    if(value3 <= 45){value3 = 45;}
+    if(value1 <= 25){value1 = 25;}
+    if(value2 <= 25){value2 = 25;}
+    if(value3 <= 25){value3 = 25;}
 
 
     pwm.writeMicroseconds(0, map(value1, 0, 180, 600, 2400));
