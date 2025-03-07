@@ -35,9 +35,15 @@ def track(capture:Type[cv.VideoCapture]) -> Tuple[bool, np.ndarray]:
     vid_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     gaussian_blur = cv.GaussianBlur(vid_gray, (17, 17), 0)
 
+    # Apply circle mask
+    mask = np.zeros_like(gaussian_blur)
+    mask = cv.circle(img=mask, center=(200,200), radius=190, color=(255,255,255), thickness=-1)
+
+    masked_image = cv.bitwise_and(mask, gaussian_blur)
+
     # Detect Circle using HoughCircles
-    circles = cv.HoughCircles(gaussian_blur, cv.HOUGH_GRADIENT, dp=1.2, minDist=500, 
-                              param1=80, param2=15, minRadius=10, maxRadius=20)
+    circles = cv.HoughCircles(masked_image, cv.HOUGH_GRADIENT, dp=1.2, minDist=500, 
+                              param1=50, param2=15, minRadius=10, maxRadius=20)
     
     if circles is not None:
         circles = np.uint16(np.around(circles))
