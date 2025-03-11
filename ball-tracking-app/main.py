@@ -115,6 +115,7 @@ def main() -> None:
             cv.putText(img=frame, text=coordinate_display, org=(coordinate_measurement[0].astype(int)+220, coordinate_measurement[1].astype(int)+200), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
             
         cv.circle(img=frame, center=(predicted_position[0].astype(int)+200, predicted_position[1].astype(int)+200), radius=2, color=(255,0,0), lineType=cv.LINE_AA, thickness=1)
+        cv.putText(img=frame, text=coordinate_display, org=(predicted_position[0].astype(int)+220, predicted_position[1].astype(int)+200), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
         # Outline of the platform and center frame
         cv.circle(img=frame, center=(200, 200), radius=190, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
 
