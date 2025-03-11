@@ -37,6 +37,9 @@ def main() -> None:
 
     servo_offsets = [0, 3, 0]
 
+    filtered_coordinates = ball.kalmanInit()
+    prevPoint = np.array([0,0], dtype=np.float32)
+
     while True:
 
         start_time = datetime.now().microsecond
@@ -45,6 +48,17 @@ def main() -> None:
         ret, frame = videoCapture.read()
         frame = frame[240-200:240+200, 320-200:320+200]
         frame = cv.flip(src=frame, flipCode=1)
+
+        coordinate_measurement = np.array([ballCoordinate[0], ballCoordinate[1]], dtype=np.float32)
+
+        if((coordinate_measurement == np.array([-200, -200])).any() == True):
+            coordinate_measurement = prevPoint
+        
+        prevPoint = coordinate_measurement
+
+        filtered_coordinates.predict()
+        filtered_coordinates.correct(measurement=coordinate_measurement)
+        predicted_position = filtered_coordinates.statePost
 
         if cv.waitKey(1) & 0xFF == ord('u'):
             # Update Kp Gain
@@ -97,10 +111,10 @@ def main() -> None:
             arduinoSerial.write(serial_message.encode('utf-8'))
             arduinoSerial.write(b'\n')
 
-            cv.circle(img=frame, center=(ballCoordinate[0]+200, ballCoordinate[1]+200), radius=2, color=(255,0,255), lineType=cv.LINE_AA, thickness=1)
-            cv.putText(img=frame, text=coordinate_display, org=(ballCoordinate[0]+220, ballCoordinate[1]+200), 
-                       fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
-
+            cv.circle(img=frame, center=(coordinate_measurement[0].astype(int) + 200, coordinate_measurement[1].astype(int) + 200), radius=2, color=(255,0,255), lineType=cv.LINE_AA, thickness=1)
+            cv.putText(img=frame, text=coordinate_display, org=(coordinate_measurement[0].astype(int)+220, coordinate_measurement[1].astype(int)+200), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
+            
+        cv.circle(img=frame, center=(predicted_position[0].astype(int)+200, predicted_position[1].astype(int)+200), radius=2, color=(255,0,0), lineType=cv.LINE_AA, thickness=1)
         # Outline of the platform and center frame
         cv.circle(img=frame, center=(200, 200), radius=190, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
 
