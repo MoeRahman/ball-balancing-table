@@ -27,8 +27,8 @@ def main() -> None:
     prev_pitch_err = 0
     height = 60.65 
 
-    Kp_roll = 0.01 
-    Kp_pitch = 0.01
+    Kp_roll = 0.025 
+    Kp_pitch = 0.025
     Kd_roll = 0
     Kd_pitch = 0
 
@@ -59,6 +59,7 @@ def main() -> None:
         filtered_coordinates.predict()
         filtered_coordinates.correct(measurement=coordinate_measurement)
         predicted_position = filtered_coordinates.statePost
+        print(predicted_position[2:])
 
         if cv.waitKey(1) & 0xFF == ord('u'):
             # Update Kp Gain
@@ -77,19 +78,26 @@ def main() -> None:
             coordinate_display = f'{ballCoordinate[0]}, {ballCoordinate[1]}'
 
             origin = [0, 0]
-            roll_err = origin[0] - ballCoordinate[1]
-            pitch_err = origin[1] - ballCoordinate[0]
+            roll_err = origin[0] - predicted_position[1]
+            pitch_err = origin[1] - predicted_position[0]
+
+            velocity = [0, 0]
+            x_vel_error = velocity[1] - predicted_position[3]
+            y_vel_error = velocity[0] -  predicted_position[2]
+
 
             # Position Error Deadband
             if(roll_err < 15 and roll_err > -15): roll_err = 0
             if(pitch_err < 15 and pitch_err > -15): pitch_err = 0
+            
+            roll_out  = 0.2*roll_err
+            pitch_out = 0.2*pitch_err
 
-            roll_out = Kp_roll*roll_err #+ Kd_roll*(prev_roll_err - roll_err)*dt/1000000
-            pitch_out = Kp_pitch*pitch_err #+ Kd_pitch*(prev_pitch_err - pitch_err)*dt/1000000
+            print(roll_out, pitch_out)
+
+            #roll_out = Kp_roll*roll_err #+ Kd_roll*(prev_roll_err - roll_err)*dt/1000000
+            #pitch_out = Kp_pitch*pitch_err #+ Kd_pitch*(prev_pitch_err - pitch_err)*dt/1000000
             #print(round(roll_out,2), round(pitch_out,2))
-
-            prev_roll_err = roll_err
-            prev_pitch_err = pitch_err
 
             # Roll and Pitch Output Clamp
             clamp_val = 6
@@ -111,13 +119,14 @@ def main() -> None:
             arduinoSerial.write(serial_message.encode('utf-8'))
             arduinoSerial.write(b'\n')
 
+            coordinate_display = f'{coordinate_measurement[0]}, {coordinate_measurement[1]}'
             cv.circle(img=frame, center=(coordinate_measurement[0].astype(int) + 200, coordinate_measurement[1].astype(int) + 200), radius=2, color=(255,0,255), lineType=cv.LINE_AA, thickness=1)
             cv.putText(img=frame, text=coordinate_display, org=(coordinate_measurement[0].astype(int)+220, coordinate_measurement[1].astype(int)+200), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
-            
+            cv.circle(img=frame, center=(200, 200), radius=190, color=(0,255,0), lineType=cv.LINE_AA, thickness=1)
+        
+        coordinate_display = f'{predicted_position[0].astype(int)}, {predicted_position[1].astype(int)}'
         cv.circle(img=frame, center=(predicted_position[0].astype(int)+200, predicted_position[1].astype(int)+200), radius=2, color=(255,0,0), lineType=cv.LINE_AA, thickness=1)
-        cv.putText(img=frame, text=coordinate_display, org=(predicted_position[0].astype(int)+220, predicted_position[1].astype(int)+200), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
-        # Outline of the platform and center frame
-        cv.circle(img=frame, center=(200, 200), radius=190, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
+        cv.putText(img=frame, text=coordinate_display, org=(predicted_position[0].astype(int)+220, predicted_position[1].astype(int)+220), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
 
         # Reference lines to align the platform
         cv.line(img=frame, pt1=(200,200), pt2=(200,10), color=(0,0,255), thickness=1)
