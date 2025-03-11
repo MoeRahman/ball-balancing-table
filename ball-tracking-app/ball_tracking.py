@@ -33,17 +33,19 @@ def track(capture:Type[cv.VideoCapture]) -> Tuple[bool, np.ndarray]:
 
     # Applying a Gaussian Blur to the grayscale image
     vid_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    gaussian_blur = cv.GaussianBlur(vid_gray, (17, 17), 0)
+    #gaussian_blur = cv.GaussianBlur(vid_gray, (17, 17), 0)
 
     # Apply circle mask
-    mask = np.zeros_like(gaussian_blur)
+    mask = np.zeros_like(vid_gray)
     mask = cv.circle(img=mask, center=(200,200), radius=190, color=(255,255,255), thickness=-1)
 
-    masked_image = cv.bitwise_and(mask, gaussian_blur)
+    masked_image = cv.bitwise_and(mask, vid_gray)
 
     # Detect Circle using HoughCircles
     circles = cv.HoughCircles(masked_image, cv.HOUGH_GRADIENT, dp=1.2, minDist=500, 
-                              param1=50, param2=15, minRadius=10, maxRadius=20)
+                              param1=50, param2=25, minRadius=10, maxRadius=15)
+    
+    chosen = [0,0,0]
     
     if circles is not None:
         circles = np.uint16(np.around(circles))
@@ -55,8 +57,8 @@ def track(capture:Type[cv.VideoCapture]) -> Tuple[bool, np.ndarray]:
                     chosen = i
 
         # Draw circle around detected object
-        #cv.circle(img=frame, center=(chosen[0], chosen[1]), radius=chosen[2], lineType=cv.LINE_AA, color=(0,0,255), thickness=2)
-        #prevCircle=chosen
+        cv.circle(img=frame, center=(chosen[0], chosen[1]), radius=1, lineType=cv.LINE_AA, color=(0,0,255), thickness=2)
+        prevCircle=chosen
 
         # Display detected object x and y coordinate as text in image
         obejct_coordinates = f'{chosen[0].astype(int)-200}\t{chosen[1].astype(int)-200}\n'
@@ -64,15 +66,28 @@ def track(capture:Type[cv.VideoCapture]) -> Tuple[bool, np.ndarray]:
         cv.putText(img=frame, text=coordinate_display, org=(chosen[0]+20, chosen[1]), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
 
         # Output Coordinate to Serial Monitor
-        return ret, np.array([chosen[0].astype(int)-200, chosen[1].astype(int)-200])
+        # return ret, np.array([chosen[0].astype(int)-200, chosen[1].astype(int)-200])
     
-    return ret, np.array([])
+    # return ret, np.array([])
 
-    # # Outline of the platform
-    # cv.circle(img=frame, center=(200, 200), radius=190, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
+    # Outline of the platform
+    cv.circle(img=frame, center=(200, 200), radius=190, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
 
-    # # DISPLAY IMAGE
-    # cv.imshow('video-raw', frame)
-    # cv.imshow('processed-img', gaussian_blur)
+    #DISPLAY IMAGE
+    cv.imshow('video-raw', frame)
+    cv.imshow('processed-img', masked_image)
 
-    # return ret, 
+    return ret, 
+
+
+def test():
+    video = cv.VideoCapture(1)
+
+    while True:
+        track(video)
+
+        # Quit program
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            break
+
+test()
