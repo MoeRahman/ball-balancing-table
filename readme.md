@@ -1,5 +1,5 @@
-Embedded Systems Project to balance a ball on a 3RRS platform robot:
+# 3RRS Ball Balancing Robot 
 
 <div align="center">
-    <img src="images/render2.png" width="50%">
+    <img src="images/render3.png" width="50%">
 </div>
