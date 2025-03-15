@@ -6,12 +6,7 @@ from datetime import datetime
 import inverse_kinematics as ik
 import math
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-from pidTuningApp import App 
 import serial
-from serial.tools.list_ports import comports
-import time
 
 
 
@@ -23,15 +18,7 @@ def main() -> None:
     if(arduinoSerial.is_open): arduinoSerial.close()
     arduinoSerial.open()
 
-    prev_roll_err = 0
-    prev_pitch_err = 0
     height = 60.65 
-
-    Kp_roll = 0.025 
-    Kp_pitch = 0.025
-    Kd_roll = 0
-    Kd_pitch = 0
-
     roll_err = 0
     pitch_err = 0
 
@@ -42,10 +29,13 @@ def main() -> None:
 
     while True:
 
-        start_time = datetime.now().microsecond
+
         ret, ballCoordinate = ball.track(videoCapture)
-        dt = datetime.now().microsecond - start_time
         ret, frame = videoCapture.read()
+
+        if (videoCapture.isOpened() == False):  
+            print("Error reading video file") 
+
         frame = frame[240-200:240+200, 320-200:320+200]
         frame = cv.flip(src=frame, flipCode=1)
 
@@ -92,12 +82,6 @@ def main() -> None:
             
             roll_out  = 0.2*roll_err
             pitch_out = 0.2*pitch_err
-
-            print(roll_out, pitch_out)
-
-            #roll_out = Kp_roll*roll_err #+ Kd_roll*(prev_roll_err - roll_err)*dt/1000000
-            #pitch_out = Kp_pitch*pitch_err #+ Kd_pitch*(prev_pitch_err - pitch_err)*dt/1000000
-            #print(round(roll_out,2), round(pitch_out,2))
 
             # Roll and Pitch Output Clamp
             clamp_val = 6

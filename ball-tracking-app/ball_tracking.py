@@ -96,14 +96,14 @@ def kalmanInit() -> Type[cv.KalmanFilter]:
                                          [0, 1, 0, 0]], dtype=np.float32)
     
     # Process noise covariance (Q) - Prediction Covariance
-    prediction_confidence = 0.01
+    prediction_confidence = 5
     Kalman.processNoiseCov = np.array([[1, 0, 0, 0],
                                        [0, 1, 0, 0],
                                        [0, 0, 1, 0],
                                        [0, 0, 0, 1]], dtype=np.float32) * prediction_confidence
     
     # Measurement noise covariance (R) - Measurement Covariance
-    measuremnt_confidence = 10
+    measuremnt_confidence = 6
     Kalman.measurementNoiseCov = np.array([[1, 0],
                                            [0, 1]], dtype=np.float32) * measuremnt_confidence
     
