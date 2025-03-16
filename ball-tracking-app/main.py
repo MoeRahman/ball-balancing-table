@@ -33,10 +33,7 @@ def main() -> None:
         ret, ballCoordinate = ball.track(videoCapture)
         ret, frame = videoCapture.read()
 
-        if (videoCapture.isOpened() == False):  
-            print("Error reading video file") 
-
-        frame = frame[240-200:240+200, 320-200:320+200]
+        frame = frame[540-500:540+500, 960-500:960+500]
         frame = cv.flip(src=frame, flipCode=1)
 
         coordinate_measurement = np.array([ballCoordinate[0], ballCoordinate[1]], dtype=np.float32)
@@ -104,22 +101,19 @@ def main() -> None:
             arduinoSerial.write(b'\n')
 
             coordinate_display = f'{coordinate_measurement[0]}, {coordinate_measurement[1]}'
-            cv.circle(img=frame, center=(coordinate_measurement[0].astype(int) + 200, coordinate_measurement[1].astype(int) + 200), radius=2, color=(255,0,255), lineType=cv.LINE_AA, thickness=1)
-            cv.putText(img=frame, text=coordinate_display, org=(coordinate_measurement[0].astype(int)+220, coordinate_measurement[1].astype(int)+200), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
-            cv.circle(img=frame, center=(200, 200), radius=190, color=(0,255,0), lineType=cv.LINE_AA, thickness=1)
+            cv.circle(img=frame, center=(coordinate_measurement[0].astype(int) + 500, coordinate_measurement[1].astype(int) + 500), radius=2, color=(255,0,255), lineType=cv.LINE_AA, thickness=1)
+            cv.putText(img=frame, text=coordinate_display, org=(coordinate_measurement[0].astype(int)+520, coordinate_measurement[1].astype(int)+500), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
+            cv.circle(img=frame, center=(500, 500), radius=475, color=(0,255,0), lineType=cv.LINE_AA, thickness=1)
         
         coordinate_display = f'{predicted_position[0].astype(int)}, {predicted_position[1].astype(int)}'
         cv.circle(img=frame, center=(predicted_position[0].astype(int)+200, predicted_position[1].astype(int)+200), radius=2, color=(255,0,0), lineType=cv.LINE_AA, thickness=1)
         cv.putText(img=frame, text=coordinate_display, org=(predicted_position[0].astype(int)+220, predicted_position[1].astype(int)+220), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
 
         # Reference lines to align the platform
-        cv.line(img=frame, pt1=(200,200), pt2=(200,10), color=(0,0,255), thickness=1)
-        rx = int(190*np.cos(np.deg2rad(210)))
-        ry = int(190*np.sin(np.deg2rad(210)))
-        cv.line(img=frame, pt1=(200,200), pt2=(200+rx,200-ry), color=(0,0,255), thickness=1)
-        rx = int(190*np.cos(np.deg2rad(330)))
-        ry = int(190*np.sin(np.deg2rad(330)))
-        cv.line(img=frame, pt1=(200,200), pt2=(200+rx,200-ry), color=(0,0,255), thickness=1)
+        for angle in range(90,340,120):
+            rx = int(475*np.cos(np.deg2rad(angle)))
+            ry = int(475*np.sin(np.deg2rad(angle)))
+            cv.line(img=frame, pt1=(500,500), pt2=(500-rx,500-ry), color=(0,0,255), thickness=1)
 
         # DISPLAY IMAGE
         cv.imshow('video-raw', frame)

@@ -29,7 +29,7 @@ def track(capture:Type[cv.VideoCapture]) -> Tuple[bool, np.ndarray]:
     ret, frame = capture.read()
     
     # Crop image to fit around platfrom plate
-    frame = frame[240-200:240+200, 320-200:320+200]
+    frame = frame[540-500:540+500, 960-500:960+500]
 
     # Flip around y-axis to match platfrom coordinate frame
     frame = cv.flip(src=frame, flipCode=1)
