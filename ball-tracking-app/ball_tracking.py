@@ -40,13 +40,13 @@ def track(capture:Type[cv.VideoCapture]) -> Tuple[bool, np.ndarray]:
 
     # Apply circle mask
     mask = np.zeros_like(vid_gray)
-    mask = cv.circle(img=mask, center=(200,200), radius=190, color=(255,255,255), thickness=-1)
+    mask = cv.circle(img=mask, center=(500,500), radius=475, color=(255,255,255), thickness=-1)
 
     masked_image = cv.bitwise_and(mask, vid_gray)
 
     # Detect Circle using HoughCircles
-    circles = cv.HoughCircles(masked_image, cv.HOUGH_GRADIENT, dp=1.2, minDist=500, 
-                              param1=50, param2=25, minRadius=10, maxRadius=15)
+    circles = cv.HoughCircles(masked_image, cv.HOUGH_GRADIENT, dp=1.2, minDist=1000, 
+                              param1=50, param2=20, minRadius=40, maxRadius=45)
 
 
     if circles is not None:
@@ -60,20 +60,21 @@ def track(capture:Type[cv.VideoCapture]) -> Tuple[bool, np.ndarray]:
 
 
         # Draw circle around detected object
-        cv.circle(img=frame, center=(200, 200), radius=190, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
+        cv.circle(img=frame, center=(500, 500), radius=475, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
         cv.circle(img=frame, center=(chosen[0], chosen[1]), radius=1, lineType=cv.LINE_AA, color=(0,0,255), thickness=2)
 
         # Display detected object x and y coordinate as text in image
-        obejct_coordinates = f'{chosen[0].astype(int)-200}\t{chosen[1].astype(int)-200}\n'
-        coordinate_display = f'({chosen[0].astype(int)-200}, {chosen[1].astype(int)-200})'
+        obejct_coordinates = f'{chosen[0].astype(int)-500}\t{chosen[1].astype(int)-500}\n'
+        coordinate_display = f'({chosen[0].astype(int)-500}, {chosen[1].astype(int)-500})'
         cv.putText(img=frame, text=coordinate_display, org=(chosen[0]+20, chosen[1]), 
                    fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
 
         # Output Coordinate to Serial Monitor
-        return ret, np.array([chosen[0].astype(float)-200, chosen[1].astype(float)-200])
+        return ret, np.array([chosen[0].astype(float)-500, chosen[1].astype(float)-500])
     
-    cv.circle(img=frame, center=(200, 200), radius=190, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
-    return ret, np.array([prevCircle[0].astype(float)-200, prevCircle[1].astype(float)-200])
+    cv.circle(img=frame, center=(500, 500), radius=475, color=(0,0,255), lineType=cv.LINE_AA, thickness=1)
+
+    return ret, np.array([prevCircle[0].astype(float)-500, prevCircle[1].astype(float)-500])
 
 
 def kalmanInit() -> Type[cv.KalmanFilter]:
@@ -114,3 +115,18 @@ def kalmanInit() -> Type[cv.KalmanFilter]:
     Kalman.statePost = np.array([0, 0, 0, 0], dtype=np.float32)
 
     return Kalman
+
+
+# cap  = cv.VideoCapture(0)
+
+# while True:
+#     ret, ball, frame = track(cap)
+
+#     cv.imshow('vid', frame)
+
+#     #quit program
+#     if cv.waitKey(1) & 0xFF == ord('q'):
+#         break
+
+# cap.release()
+# cv.destroyAllWindows()

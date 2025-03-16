@@ -9,10 +9,9 @@ import numpy as np
 import serial
 
 
-
 def main() -> None:
 
-    videoCapture = cv.VideoCapture(1)
+    videoCapture = cv.VideoCapture(0)
 
     arduinoSerial = serial.Serial(port='COM3', baudrate=115200, timeout=0.1)
     if(arduinoSerial.is_open): arduinoSerial.close()
@@ -38,7 +37,7 @@ def main() -> None:
 
         coordinate_measurement = np.array([ballCoordinate[0], ballCoordinate[1]], dtype=np.float32)
 
-        if((coordinate_measurement == np.array([-200, -200])).any() == True):
+        if((coordinate_measurement == np.array([-500, -500])).any() == True):
             coordinate_measurement = prevPoint
         
         prevPoint = coordinate_measurement
@@ -46,7 +45,6 @@ def main() -> None:
         filtered_coordinates.predict()
         filtered_coordinates.correct(measurement=coordinate_measurement)
         predicted_position = filtered_coordinates.statePost
-        print(predicted_position[2:])
 
         if cv.waitKey(1) & 0xFF == ord('u'):
             # Update Kp Gain
@@ -65,8 +63,8 @@ def main() -> None:
             coordinate_display = f'{ballCoordinate[0]}, {ballCoordinate[1]}'
 
             origin = [0, 0]
-            roll_err = origin[0] - predicted_position[1]
-            pitch_err = origin[1] - predicted_position[0]
+            roll_err =  predicted_position[1] - origin[1]
+            pitch_err = predicted_position[0] - origin[0]
 
             velocity = [0, 0]
             x_vel_error = velocity[1] - predicted_position[3]
@@ -77,8 +75,8 @@ def main() -> None:
             if(roll_err < 15 and roll_err > -15): roll_err = 0
             if(pitch_err < 15 and pitch_err > -15): pitch_err = 0
             
-            roll_out  = 0.2*roll_err
-            pitch_out = 0.2*pitch_err
+            roll_out  = 0.05*roll_err
+            pitch_out = 0.05*pitch_err
 
             # Roll and Pitch Output Clamp
             clamp_val = 6
@@ -102,13 +100,13 @@ def main() -> None:
 
             coordinate_display = f'{coordinate_measurement[0]}, {coordinate_measurement[1]}'
             cv.circle(img=frame, center=(coordinate_measurement[0].astype(int) + 500, coordinate_measurement[1].astype(int) + 500), radius=2, color=(255,0,255), lineType=cv.LINE_AA, thickness=1)
-            cv.putText(img=frame, text=coordinate_display, org=(coordinate_measurement[0].astype(int)+520, coordinate_measurement[1].astype(int)+500), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
+            cv.putText(img=frame, text=coordinate_display, org=(coordinate_measurement[0].astype(int)+540, coordinate_measurement[1].astype(int)+500), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
             cv.circle(img=frame, center=(500, 500), radius=475, color=(0,255,0), lineType=cv.LINE_AA, thickness=1)
         
         coordinate_display = f'{predicted_position[0].astype(int)}, {predicted_position[1].astype(int)}'
-        cv.circle(img=frame, center=(predicted_position[0].astype(int)+200, predicted_position[1].astype(int)+200), radius=2, color=(255,0,0), lineType=cv.LINE_AA, thickness=1)
-        cv.putText(img=frame, text=coordinate_display, org=(predicted_position[0].astype(int)+220, predicted_position[1].astype(int)+220), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
-
+        cv.circle(img=frame, center=(predicted_position[0].astype(int)+500, predicted_position[1].astype(int)+500), radius=2, color=(255,0,0), lineType=cv.LINE_AA, thickness=1)
+        cv.putText(img=frame, text=coordinate_display, org=(predicted_position[0].astype(int)+540, predicted_position[1].astype(int)+540), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
+        cv.circle(img=frame, center=(500, 500), radius=40, color=(0,255,250), lineType=cv.LINE_AA, thickness=1)
         # Reference lines to align the platform
         for angle in range(90,340,120):
             rx = int(475*np.cos(np.deg2rad(angle)))
