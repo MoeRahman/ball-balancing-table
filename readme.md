@@ -1,5 +1,5 @@
 # 3RRS Ball Balancing Robot 
 
 <div align="center">
-    <img src="images/render3.png" width="50%">
+    <img src="images/render4.png" width="100%">
 </div>
