@@ -1,12 +1,11 @@
 
-
-import ball_tracking as ball
-import cv2 as cv
-from datetime import datetime
-import inverse_kinematics as ik
 import math
+import cv2 as cv
 import numpy as np
 import serial
+import ball_tracking as ball
+import inverse_kinematics as ik
+
 
 
 def main() -> None:
@@ -21,12 +20,12 @@ def main() -> None:
     roll_err = 0
     pitch_err = 0
 
-    Kp_roll  = 0.01
-    Kp_pitch = 0.01
+    Kp_roll  = 0.001
+    Kp_pitch = 0.001
     Kd_roll  = 0.1
     Kd_pitch = 0.1
 
-    servo_offsets = [3, 0, 0]
+    servo_offsets = [2, 0, -2]
 
     filtered_coordinates = ball.kalmanInit()
     prevPoint = np.array([0,0], dtype=np.float32)
