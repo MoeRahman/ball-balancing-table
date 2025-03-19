@@ -1,12 +1,8 @@
+"""Module allows to track a circular object captured on video"""
 
-
+from typing import Type, Tuple
 import cv2 as cv
 import numpy as np
-from typing import Type, Tuple
-
-
-def nothing(x):pass
-
 
 def track(capture:Type[cv.VideoCapture]) -> Tuple[bool, np.ndarray]:
     """
