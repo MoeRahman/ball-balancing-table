@@ -26,6 +26,8 @@ def main() -> None:
     filtered_coordinates = ball.kalmanInit()
     prevPoint = np.array([0,0], dtype=np.float32)
 
+
+
     while True:
 
 
@@ -56,20 +58,21 @@ def main() -> None:
             Kd_pitch = float(input("Kd:\t"))
             continue
 
+        obejct_coordinates = f'{ballCoordinate[0]}, {ballCoordinate[1]}\n' 
+        coordinate_display = f'{ballCoordinate[0]}, {ballCoordinate[1]}'
+
+        origin = [0, 0]
+        roll_err =  predicted_position[1] - origin[1]
+        pitch_err = predicted_position[0] - origin[0]
+
+        velocity = [0, 0]
+        max_vel  = [0, 0]
+        x_vel_error = velocity[1] - predicted_position[3]
+        y_vel_error = velocity[0] -  predicted_position[2]
+
         if(len(ballCoordinate) == 0):
             pass
         else:
-            obejct_coordinates = f'{ballCoordinate[0]}, {ballCoordinate[1]}\n' 
-            coordinate_display = f'{ballCoordinate[0]}, {ballCoordinate[1]}'
-
-            origin = [0, 0]
-            roll_err =  predicted_position[1] - origin[1]
-            pitch_err = predicted_position[0] - origin[0]
-
-            velocity = [0, 0]
-            x_vel_error = velocity[1] - predicted_position[3]
-            y_vel_error = velocity[0] -  predicted_position[2]
-
 
             # Position Error Deadband
             if(roll_err < 15 and roll_err > -15): roll_err = 0
@@ -108,11 +111,10 @@ def main() -> None:
         cv.putText(img=frame, text=coordinate_display, org=(predicted_position[0].astype(int)+540, predicted_position[1].astype(int)+540), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
         cv.circle(img=frame, center=(500, 500), radius=40, color=(0,255,250), lineType=cv.LINE_AA, thickness=1)
         # Reference lines to align the platform
-        for angle in range(90,340,120):
+        for angle in range(30,275,120):
             rx = int(475*np.cos(np.deg2rad(angle)))
             ry = int(475*np.sin(np.deg2rad(angle)))
             cv.line(img=frame, pt1=(500,500), pt2=(500-rx,500-ry), color=(0,0,255), thickness=1)
-
         # DISPLAY IMAGE
         cv.imshow('video-raw', frame)
 
