@@ -17,15 +17,22 @@ def main() -> None:
     if(arduinoSerial.is_open): arduinoSerial.close()
     arduinoSerial.open()
 
-    height = 60.65 
+    height = 50 
     roll_err = 0
     pitch_err = 0
 
-    servo_offsets = [0, 3, 0]
+    Kp_roll  = 0.01
+    Kp_pitch = 0.01
+    Kd_roll  = 0.1
+    Kd_pitch = 0.1
+
+    servo_offsets = [3, 0, 0]
 
     filtered_coordinates = ball.kalmanInit()
     prevPoint = np.array([0,0], dtype=np.float32)
 
+    origin = [0, 0]
+    velocity = [0, 0]
 
 
     while True:
@@ -58,40 +65,44 @@ def main() -> None:
             Kd_pitch = float(input("Kd:\t"))
             continue
 
-        obejct_coordinates = f'{ballCoordinate[0]}, {ballCoordinate[1]}\n' 
-        coordinate_display = f'{ballCoordinate[0]}, {ballCoordinate[1]}'
-
-        origin = [0, 0]
-        roll_err =  predicted_position[1] - origin[1]
-        pitch_err = predicted_position[0] - origin[0]
-
-        velocity = [0, 0]
-        max_vel  = [0, 0]
-        x_vel_error = velocity[1] - predicted_position[3]
-        y_vel_error = velocity[0] -  predicted_position[2]
-
         if(len(ballCoordinate) == 0):
             pass
         else:
 
+            obejct_coordinates = f'{ballCoordinate[0]}, {ballCoordinate[1]}\n' 
+            coordinate_display = f'{ballCoordinate[0]}, {ballCoordinate[1]}'
+
+            roll_err  = predicted_position[1] - origin[1]
+            pitch_err = predicted_position[0] - origin[0]
+
+            x_vel_error = predicted_position[3] - velocity[1]
+            y_vel_error = predicted_position[2] - velocity[0]
+
             # Position Error Deadband
             if(roll_err < 15 and roll_err > -15): roll_err = 0
             if(pitch_err < 15 and pitch_err > -15): pitch_err = 0
+
+            # Velocity Error Deadband
+            if(x_vel_error < 2 and x_vel_error  > -2): x_vel_error = 0
+            if(y_vel_error < 2 and y_vel_error  > -2): y_vel_error = 0
             
-            roll_out  = 0.05*roll_err
-            pitch_out = 0.05*pitch_err
+            roll_out  = Kp_roll*roll_err   + Kd_roll*x_vel_error 
+            pitch_out = Kp_pitch*pitch_err + Kd_pitch*y_vel_error
 
             # Roll and Pitch Output Clamp
-            clamp_val = 6
+            clamp_val = 8
             if(roll_out > clamp_val): roll_out = clamp_val
             if(pitch_out > clamp_val): pitch_out = clamp_val
 
-            if(roll_out < -7): roll_out = -7
-            if(pitch_out < -1*clamp_val): pitch_out = -1*clamp_val
+            clamp_val = -8
+            if(roll_out < clamp_val): roll_out = clamp_val
+            if(pitch_out < clamp_val): pitch_out = clamp_val
+
+            #print("roll:\t", roll_out, "pitch:\t", pitch_out)
             
             servo_angles = ik.calculate_joint_angles(roll=roll_out, pitch=pitch_out, height=height)
             servoAngles = np.around(servo_angles, decimals=2) + servo_offsets
-            #print(servoAngles)
+            print(servoAngles)
             
             servoAngles = [90.0 if math.isnan(val) else val for val in servoAngles]
                 
