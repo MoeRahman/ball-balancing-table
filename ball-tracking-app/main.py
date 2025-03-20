@@ -22,8 +22,8 @@ def main() -> None:
 
     Kp_roll  = 0.001
     Kp_pitch = 0.001
-    Kd_roll  = 0.1
-    Kd_pitch = 0.1
+    Kd_roll  = 0.075
+    Kd_pitch = 0.075
 
     servo_offsets = [2, 0, -2]
 
@@ -78,8 +78,8 @@ def main() -> None:
             y_vel_error = predicted_position[2] - velocity[0]
 
             # Position Error Deadband
-            if(roll_err < 15 and roll_err > -15): roll_err = 0
-            if(pitch_err < 15 and pitch_err > -15): pitch_err = 0
+            if(roll_err < 100 and roll_err > -100): roll_err = 0
+            if(pitch_err < 100 and pitch_err > -100): pitch_err = 0
 
             # Velocity Error Deadband
             if(x_vel_error < 2 and x_vel_error  > -2): x_vel_error = 0
