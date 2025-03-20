@@ -91,7 +91,7 @@ def main() -> None:
             cumulative_pitch_err += pitch_err
 
             # Position Error Deadband
-            position_deadband = 10
+            position_deadband = 50
             if(roll_err < position_deadband and roll_err > -position_deadband):
                 roll_err = 0
                 cumulative_roll_err = 0
