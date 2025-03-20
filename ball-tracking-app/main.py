@@ -10,25 +10,30 @@ import inverse_kinematics as ik
 
 def main() -> None:
 
-    videoCapture = cv.VideoCapture(0)
+    video_capture = cv.VideoCapture(0)
 
-    arduinoSerial = serial.Serial(port='COM3', baudrate=115200, timeout=0.1)
-    if(arduinoSerial.is_open): arduinoSerial.close()
-    arduinoSerial.open()
+    arduino_serial = serial.Serial(port='COM3', baudrate=115200, timeout=0.1)
 
-    height = 50 
+    if arduino_serial.is_open:
+        arduino_serial.close()
+
+    arduino_serial.open()
+
+    height = 50
     roll_err = 0
     pitch_err = 0
 
-    Kp_roll  = 0.001
-    Kp_pitch = 0.001
-    Kd_roll  = 0.075
-    Kd_pitch = 0.075
+    kp_roll  = 0.004
+    kp_pitch = 0.004
+    kd_roll  = 0.0925
+    kd_pitch = 0.0925
+    ki_roll  = 0.0001
+    ki_pitch = 0.0001
 
-    servo_offsets = [2, 0, -2]
+    servo_offsets = [2, 0, 0]
 
     filtered_coordinates = ball.kalmanInit()
-    prevPoint = np.array([0,0], dtype=np.float32)
+    prev_point = np.array([0,0], dtype=np.float32)
 
     origin = [0, 0]
     velocity = [0, 0]
@@ -37,18 +42,18 @@ def main() -> None:
     while True:
 
 
-        ret, ballCoordinate = ball.track(videoCapture)
-        ret, frame = videoCapture.read()
+        ret, ball_coordinate = ball.track(video_capture)
+        ret, frame = video_capture.read()
 
         frame = frame[540-500:540+500, 960-500:960+500]
         frame = cv.flip(src=frame, flipCode=1)
 
-        coordinate_measurement = np.array([ballCoordinate[0], ballCoordinate[1]], dtype=np.float32)
+        coordinate_measurement = np.array([ball_coordinate[0], ball_coordinate[1]], dtype=np.float32)
 
-        if((coordinate_measurement == np.array([-500, -500])).any() == True):
-            coordinate_measurement = prevPoint
+        if (coordinate_measurement == np.array([-500, -500])).any():
+            coordinate_measurement = prev_point
         
-        prevPoint = coordinate_measurement
+        prev_point = coordinate_measurement
 
         filtered_coordinates.predict()
         filtered_coordinates.correct(measurement=coordinate_measurement)
@@ -56,20 +61,22 @@ def main() -> None:
 
         if cv.waitKey(1) & 0xFF == ord('u'):
             # Update Kp Gain
-            Kp_roll = float(input("Kp:\t"))
-            Kp_pitch = float(input("Kp:\t"))
+            kp_roll = float(input("Kp:\t"))
+            kp_pitch = float(input("Kp:\t"))
 
             # Update Kd Gain
-            Kd_roll = float(input("Kd:\t"))
-            Kd_pitch = float(input("Kd:\t"))
+            kd_roll = float(input("Kd:\t"))
+            kd_pitch = float(input("Kd:\t"))
             continue
 
-        if(len(ballCoordinate) == 0):
+        if len(ball_coordinate) == 0:
             pass
         else:
 
-            obejct_coordinates = f'{ballCoordinate[0]}, {ballCoordinate[1]}\n' 
-            coordinate_display = f'{ballCoordinate[0]}, {ballCoordinate[1]}'
+            # Calculate Velocity and Position Error
+
+            #obejct_coordinates = f'{ball_coordinate[0]}, {ball_coordinate[1]}\n'
+            coordinate_display = f'{ball_coordinate[0]}, {ball_coordinate[1]}'
 
             roll_err  = predicted_position[1] - origin[1]
             pitch_err = predicted_position[0] - origin[0]
@@ -78,38 +85,52 @@ def main() -> None:
             y_vel_error = predicted_position[2] - velocity[0]
 
             # Position Error Deadband
-            if(roll_err < 100 and roll_err > -100): roll_err = 0
-            if(pitch_err < 100 and pitch_err > -100): pitch_err = 0
+            deadband = 40
+            if(roll_err < deadband and roll_err > -deadband):
+                roll_err = 0
+
+            if(pitch_err < deadband and pitch_err > -deadband):
+                pitch_err = 0
 
             # Velocity Error Deadband
-            if(x_vel_error < 2 and x_vel_error  > -2): x_vel_error = 0
-            if(y_vel_error < 2 and y_vel_error  > -2): y_vel_error = 0
-            
-            roll_out  = Kp_roll*roll_err   + Kd_roll*x_vel_error 
-            pitch_out = Kp_pitch*pitch_err + Kd_pitch*y_vel_error
+            if(x_vel_error < 2 and x_vel_error  > -2):
+                x_vel_error = 0
+
+            if(y_vel_error < 2 and y_vel_error  > -2):
+                y_vel_error = 0
+
+            # Calculate the PID Output 
+            roll_out  = kp_roll*roll_err   + kd_roll*x_vel_error
+            pitch_out = kp_pitch*pitch_err + kd_pitch*y_vel_error
 
             # Roll and Pitch Output Clamp
             clamp_val = 8
-            if(roll_out > clamp_val): roll_out = clamp_val
-            if(pitch_out > clamp_val): pitch_out = clamp_val
+            if(roll_out > clamp_val):
+                roll_out = clamp_val
+
+            if(pitch_out > clamp_val):
+                pitch_out = clamp_val
 
             clamp_val = -8
-            if(roll_out < clamp_val): roll_out = clamp_val
-            if(pitch_out < clamp_val): pitch_out = clamp_val
+            if(roll_out < clamp_val):
+                roll_out = clamp_val
+                
+            if(pitch_out < clamp_val):
+                pitch_out = clamp_val
 
-            #print("roll:\t", roll_out, "pitch:\t", pitch_out)
-            
+           
             servo_angles = ik.calculate_joint_angles(roll=roll_out, pitch=pitch_out, height=height)
-            servoAngles = np.around(servo_angles, decimals=2) + servo_offsets
-            print(servoAngles)
+            servo_angles = np.around(servo_angles, decimals=2) + servo_offsets
+            print(servo_angles)
             
-            servoAngles = [90.0 if math.isnan(val) else val for val in servoAngles]
+            # To avoid the issue with Nan values we can just round those numbers to 90 deg
+            servo_angles = [90.0 if math.isnan(val) else val for val in servo_angles]
                 
             # Serial Communication
-            serial_message = ",".join([str(float(val)) for val in servoAngles])
+            serial_message = ",".join([str(float(val)) for val in servo_angles])
             #print(serial_message)
-            arduinoSerial.write(serial_message.encode('utf-8'))
-            arduinoSerial.write(b'\n')
+            arduino_serial.write(serial_message.encode('utf-8'))
+            arduino_serial.write(b'\n')
 
             coordinate_display = f'{coordinate_measurement[0]}, {coordinate_measurement[1]}'
             cv.circle(img=frame, center=(coordinate_measurement[0].astype(int) + 500, coordinate_measurement[1].astype(int) + 500), radius=2, color=(255,0,255), lineType=cv.LINE_AA, thickness=1)
@@ -130,12 +151,12 @@ def main() -> None:
 
         # Quit program
         if cv.waitKey(1) & 0xFF == ord('q'):
-            arduinoSerial.close()
+            arduino_serial.close()
             break
 
     
 
-    videoCapture.release()
+    video_capture.release()
     cv.destroyAllWindows()
 
     return None
