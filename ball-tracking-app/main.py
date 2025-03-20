@@ -20,27 +20,30 @@ def main() -> None:
     arduino_serial.open()
 
     height = 50
+
     roll_err = 0
     pitch_err = 0
 
-    kp_roll  = 0.004
-    kp_pitch = 0.004
-    kd_roll  = 0.0925
-    kd_pitch = 0.0925
-    ki_roll  = 0.0001
-    ki_pitch = 0.0001
+    cumulative_roll_err = 0
+    cumulative_pitch_err = 0
+
+    kp_roll  = 0.002
+    kp_pitch = 0.002
+    kd_roll  = 0.095
+    kd_pitch = 0.095
+    ki_roll  = 0.0005
+    ki_pitch = 0.0005
 
     servo_offsets = [2, 0, 0]
 
     filtered_coordinates = ball.kalmanInit()
     prev_point = np.array([0,0], dtype=np.float32)
 
-    origin = [0, 0]
-    velocity = [0, 0]
+    position_setpoint = [0, 0]
+    velocity_setpoint = [0, 0]
 
 
     while True:
-
 
         ret, ball_coordinate = ball.track(video_capture)
         ret, frame = video_capture.read()
@@ -73,55 +76,62 @@ def main() -> None:
             pass
         else:
 
-            # Calculate Velocity and Position Error
-
             #obejct_coordinates = f'{ball_coordinate[0]}, {ball_coordinate[1]}\n'
             coordinate_display = f'{ball_coordinate[0]}, {ball_coordinate[1]}'
 
-            roll_err  = predicted_position[1] - origin[1]
-            pitch_err = predicted_position[0] - origin[0]
+            # Calculate Velocity and Position Error
+            roll_err  = predicted_position[1] - position_setpoint[1]
+            pitch_err = predicted_position[0] - position_setpoint[0]
 
-            x_vel_error = predicted_position[3] - velocity[1]
-            y_vel_error = predicted_position[2] - velocity[0]
+            x_vel_error = predicted_position[3] - velocity_setpoint[1]
+            y_vel_error = predicted_position[2] - velocity_setpoint[0]
+
+            # Cumulative Erorr
+            cumulative_roll_err  += roll_err
+            cumulative_pitch_err += pitch_err
 
             # Position Error Deadband
-            deadband = 40
-            if(roll_err < deadband and roll_err > -deadband):
+            position_deadband = 10
+            if(roll_err < position_deadband and roll_err > -position_deadband):
                 roll_err = 0
+                cumulative_roll_err = 0
 
-            if(pitch_err < deadband and pitch_err > -deadband):
+            if(pitch_err < position_deadband and pitch_err > -position_deadband):
                 pitch_err = 0
+                cumulative_pitch_err = 0
 
             # Velocity Error Deadband
-            if(x_vel_error < 2 and x_vel_error  > -2):
+            velocity_deadband = 1
+            if(x_vel_error < velocity_deadband and x_vel_error  > -velocity_deadband):
                 x_vel_error = 0
 
-            if(y_vel_error < 2 and y_vel_error  > -2):
+            if(y_vel_error < velocity_deadband and y_vel_error  > -velocity_deadband):
                 y_vel_error = 0
 
+            # Clamp Cumulative Eror {Mitigate Integral Windup}
+            integral_clamp = 50000
+            if(abs(cumulative_roll_err) > integral_clamp):
+                cumulative_roll_err = integral_clamp
+
+            if(abs(cumulative_pitch_err) > integral_clamp):
+                cumulative_pitch_err = integral_clamp
+
             # Calculate the PID Output 
-            roll_out  = kp_roll*roll_err   + kd_roll*x_vel_error
-            pitch_out = kp_pitch*pitch_err + kd_pitch*y_vel_error
+            roll_out  = kp_roll*roll_err   + kd_roll*x_vel_error  + ki_roll*cumulative_roll_err
+            pitch_out = kp_pitch*pitch_err + kd_pitch*y_vel_error + ki_pitch*cumulative_pitch_err 
 
             # Roll and Pitch Output Clamp
             clamp_val = 8
-            if(roll_out > clamp_val):
+            if(abs(roll_out) > clamp_val):
                 roll_out = clamp_val
 
-            if(pitch_out > clamp_val):
-                pitch_out = clamp_val
-
-            clamp_val = -8
-            if(roll_out < clamp_val):
-                roll_out = clamp_val
-                
-            if(pitch_out < clamp_val):
+            if(abs(pitch_out) > clamp_val):
                 pitch_out = clamp_val
 
            
             servo_angles = ik.calculate_joint_angles(roll=roll_out, pitch=pitch_out, height=height)
             servo_angles = np.around(servo_angles, decimals=2) + servo_offsets
-            print(servo_angles)
+            #print(servo_angles)
             
             # To avoid the issue with Nan values we can just round those numbers to 90 deg
             servo_angles = [90.0 if math.isnan(val) else val for val in servo_angles]
