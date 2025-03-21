@@ -100,6 +100,13 @@ def main() -> None:
                 pitch_err = 0
                 cumulative_pitch_err = 0
 
+            position_outerband = 350
+            if(roll_err > position_outerband or roll_err < -position_outerband):
+                roll_err = 600
+
+            if(pitch_err > position_outerband or pitch_err < -position_outerband):
+                pitch_err = 600
+                
             # Velocity Error Deadband
             velocity_deadband = 1
             if(x_vel_error < velocity_deadband and x_vel_error  > -velocity_deadband):
