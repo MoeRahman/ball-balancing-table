@@ -12,7 +12,7 @@ def main() -> None:
 
     video_capture = cv.VideoCapture(0)
 
-    arduino_serial = serial.Serial(port='COM3', baudrate=115200, timeout=0.1)
+    arduino_serial = serial.Serial(port='COM7', baudrate=115200, timeout=0.1)
 
     if arduino_serial.is_open:
         arduino_serial.close()
@@ -27,14 +27,14 @@ def main() -> None:
     cumulative_roll_err = 0
     cumulative_pitch_err = 0
 
-    kp_roll  = 0.002
-    kp_pitch = 0.002
-    kd_roll  = 0.095
-    kd_pitch = 0.095
-    ki_roll  = 0.0005
-    ki_pitch = 0.0005
+    kp_roll  = 0.001
+    kp_pitch = 0.001
+    kd_roll  = 0.1
+    kd_pitch = 0.1
+    ki_roll  = 0.0001
+    ki_pitch = 0.0001
 
-    servo_offsets = [2, 0, 0]
+    servo_offsets = [0, 2, 0]
 
     filtered_coordinates = ball.kalmanInit()
     prev_point = np.array([0,0], dtype=np.float32)
@@ -49,7 +49,7 @@ def main() -> None:
         ret, frame = video_capture.read()
 
         frame = frame[540-500:540+500, 960-500:960+500]
-        frame = cv.flip(src=frame, flipCode=1)
+        frame = cv.flip(src=frame, flipCode=0)
 
         coordinate_measurement = np.array([ball_coordinate[0], ball_coordinate[1]], dtype=np.float32)
 
@@ -91,14 +91,12 @@ def main() -> None:
             cumulative_pitch_err += pitch_err
 
             # Position Error Deadband
-            position_deadband = 50
+            position_deadband = 20
             if(roll_err < position_deadband and roll_err > -position_deadband):
                 roll_err = 0
-                cumulative_roll_err = 0
 
             if(pitch_err < position_deadband and pitch_err > -position_deadband):
                 pitch_err = 0
-                cumulative_pitch_err = 0
 
             position_outerband = 350
             if(roll_err > position_outerband or roll_err < -position_outerband):
@@ -138,7 +136,10 @@ def main() -> None:
            
             servo_angles = ik.calculate_joint_angles(roll=roll_out, pitch=pitch_out, height=height)
             servo_angles = np.around(servo_angles, decimals=2) + servo_offsets
-            #print(servo_angles)
+
+            print("Roll Output:\t", float("{:.2f}".format(roll_out)), "\tPitch Output:\t", float("{:.2f}".format(pitch_out)), 
+                  "\tRoll Error:\t", float("{:.2f}".format(roll_err)), "\tPitch Output:\t", float("{:.2f}".format(pitch_err)),
+                  "\tServo Angles:\t", servo_angles)
             
             # To avoid the issue with Nan values we can just round those numbers to 90 deg
             servo_angles = [90.0 if math.isnan(val) else val for val in servo_angles]
