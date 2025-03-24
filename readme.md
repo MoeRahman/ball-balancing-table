@@ -1,9 +1,6 @@
+<h1> BalanceBot
+</h1>
 
-
-
-<div align="center">
-    <h1> 3RRS Ball Balancing Robot</h1>
-</div>
 
 <div align="center">
     <img src="images/render4.png" width="100%">
