@@ -28,7 +28,7 @@ def track(capture:Type[cv.VideoCapture]) -> Tuple[bool, np.ndarray]:
     frame = frame[540-500:540+500, 960-500:960+500]
 
     # Flip around y-axis to match platfrom coordinate frame
-    frame = cv.flip(src=frame, flipCode=1)
+    frame = cv.flip(src=frame, flipCode=0)
 
     # Applying a Gaussian Blur to the grayscale image
     vid_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
