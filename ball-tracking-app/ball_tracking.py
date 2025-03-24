@@ -75,11 +75,21 @@ def track(capture:Type[cv.VideoCapture]) -> Tuple[bool, np.ndarray]:
 
 def kalmanInit() -> Type[cv.KalmanFilter]:
 
-    # Instantiate Kalman Filter Class with 
-    """Keyword Arguments:
+    """
+    Instantiate Kalman Filter Class
+
+    Keyword Arguments:
         - 4 dynamic parameters (xPos, yPos, xVel, yVel) 
         - 2 measurement parameters (xPos, yPos)
+
+    Args:
+        None
+
+    Return:
+        KalmanFilter Object
+
     """
+
     Kalman = cv.KalmanFilter(dynamParams=4, measureParams=2)
 
     # Transition Matrix (A) - State Transition Matrix (position & velocity)
@@ -111,18 +121,3 @@ def kalmanInit() -> Type[cv.KalmanFilter]:
     Kalman.statePost = np.array([0, 0, 0, 0], dtype=np.float32)
 
     return Kalman
-
-
-# cap  = cv.VideoCapture(0)
-
-# while True:
-#     ret, ball, frame = track(cap)
-
-#     cv.imshow('vid', frame)
-
-#     #quit program
-#     if cv.waitKey(1) & 0xFF == ord('q'):
-#         break
-
-# cap.release()
-# cv.destroyAllWindows()
