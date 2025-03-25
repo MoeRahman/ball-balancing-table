@@ -23,13 +23,15 @@
          alt="CAD Model of Robot"
          width="80%">
 </div>
-This project is an attempt to replicate a video I saw over 5 years ago in high school of a ball balancing robot. After several failed attempts and years of redesign I landed on the current design.
+
+Throughout the years of this project I only had one question, how do you get a machine to balance a ball? The thing I didn't know at the time was that the answer wasn't one singular thing, but rather a system that senses, thinks and acts. This project got me to learn several new things, namely:
+
 <ul> 
-    <li> Computer Vision             </li> 
-    <li> Robotics                    </li>
-    <li> Embedded Systems            </li>
-    <li> Digital Control Systems     </li>
-    <li> State Estimation            </li>
+    <li> <b>Computer Vision:         </b>Utilized OpenCV to estimate objects's position and velocity.     </li> 
+    <li> <b>Robotics:                </b>Derived nverse kinematics for a 3RRS parallel manipulator.     </li>
+    <li> <b>Embedded Systems:        </b>Sent actuator angles to ARM processor via UART communication.     </li>
+    <li> <b>Digital Control Systems: </b>Implemented a discrete PID controller to control the position of the ball.     </li>
+    <li> <b>State Estimation:        </b>Integrated a Kalman Filter to improve object tracking.   </li>
 </ul>
 </div>
 
