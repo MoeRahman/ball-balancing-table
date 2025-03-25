@@ -5,12 +5,12 @@
     Ball Balancing 3RRS Parallel Platform Manipulator
 </h1>
 
-<h1 
+<h2 
     style="text-align:left; 
            font-family:Helvetica;
            font-weight: 1000">
     Project Description
-</h1>
+</h2>
 
 <div>
 
@@ -35,8 +35,18 @@ Throughout the years of this project I only had one question, how do you get a m
 </ul>
 </div>
 
-<!-- https://youtu.be/57DbEEBF7sE?si=i6w106zvj4dvtrUl
-https://www.ba-bot.com/ -->
+<h2 
+    style="text-align:left; 
+           font-family:Helvetica;
+           font-weight: 1000">
+    References
+</h2>
+
+<ul>
+    <li><a href="https://www.youtube.com/watch?v=57DbEEBF7sE">Johan Link's Original Video</a> <- Video Inspiration</li>
+    <li><a href="https://www.ba-bot.com/">BABOT website</a><-Johan Link's Website</li>
+</ul>
+
 
 <div align="center">
     <img src="images/render-clear.png" 
