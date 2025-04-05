@@ -5,6 +5,8 @@
     Ball Balancing 3RRS Parallel Platform Manipulator
 </h1>
 
+
+
 <h2 
     style="text-align:left; 
            font-family:Helvetica;
@@ -46,11 +48,3 @@ Throughout the years of this project I only had one question, how do you get a m
     <li><a href="https://www.youtube.com/watch?v=57DbEEBF7sE">Johan Link's Original Video</a> <- Video Inspiration</li>
     <li><a href="https://www.ba-bot.com/">BABOT website</a><-Johan Link's Website</li>
 </ul>
-
-
-<div align="center">
-    <img src="images/render-clear.png" 
-         alt="Clear Model of Robot" 
-         style="padding-bottom: 20px; display: block; border: none;"
-         width="100%">
-</div>
