@@ -37,6 +37,13 @@ Throughout the years of this project I only had one question, how do you get a m
 </ul>
 </div>
 
+<p style="text-align:left; font-family:Helvetica; font-weight: 1000 display:block">
+    Here is a video of the robot attempting to bring the stainless steel ball to a stop in the center of the platform.
+</p>
+
+<video controls src="videos/github-readme.mp4" title=""></video>
+
+
 <h2 
     style="text-align:left; 
            font-family:Helvetica;
