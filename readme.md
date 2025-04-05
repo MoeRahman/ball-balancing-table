@@ -41,8 +41,9 @@ Throughout the years of this project I only had one question, how do you get a m
     Here is a video of the robot attempting to bring the stainless steel ball to a stop in the center of the platform.
 </p>
 
-[<video src="https://github.com/MoeRahman/ball-balancing-table/blob/main/videos/github-readme.mp4"></video>](https://github.com/MoeRahman/ball-balancing-table/blob/main/videos/github-readme.mp4)
-
+<p align="center">
+  <img src="https://github.com/MoeRahman/ball-balancing-table/blob/main/videos/github-readme.gif?raw=true" width="600" />
+</p>
 
 <h2 
     style="text-align:left; 
