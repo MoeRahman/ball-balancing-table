@@ -25,14 +25,21 @@ def main() -> None:
     height = 50
     roll_err = 0
     pitch_err = 0
- 
+
+    x_vel_error = 0
+    y_vel_error = 0
+
+    alpha = 0.8
+    prev_x_vel_error = 0
+    prev_y_vel_error = 0
+
     cumulative_roll_err = 0
     cumulative_pitch_err = 0
 
     kp_roll  = 0.01
     kp_pitch = 0.01
-    kd_roll  = 0.08
-    kd_pitch = 0.08
+    kd_roll  = 0.1
+    kd_pitch = 0.1
     ki_roll  = 0
     ki_pitch = 0
     servo_offsets = [0, 0, 0]
@@ -42,7 +49,6 @@ def main() -> None:
 
     position_setpoint = [0,0]
     velocity_setpoint = [0, 0]
-
 
     while True:
 
@@ -105,32 +111,38 @@ def main() -> None:
                 pitch_err = 0
                 cumulative_pitch_err = cumulative_pitch_err
 
-            # Cumulative Erorr
-            cumulative_roll_err  += roll_err
-            cumulative_pitch_err += pitch_err
+            # Resolving Derivative/Velocity Kick by filtering velocity signal
+            filtered_x_vel_error = alpha * x_vel_error + (1 - alpha) * prev_x_vel_error 
+            filtered_y_vel_error = alpha * y_vel_error + (1 - alpha) * prev_y_vel_error
+
+            prev_x_vel_error = filtered_x_vel_error
+            prev_y_vel_error = filtered_y_vel_error
 
             # Velocity Error Deadband
             velocity_deadband = 2
-            if(x_vel_error < velocity_deadband and x_vel_error > -velocity_deadband):
-                x_vel_error = 0
+            if(filtered_x_vel_error < velocity_deadband and filtered_x_vel_error > -velocity_deadband):
+                filtered_x_vel_error = 0
 
-            if(y_vel_error < velocity_deadband and y_vel_error > -velocity_deadband):
-                y_vel_error = 0
+            if(filtered_y_vel_error < velocity_deadband and filtered_y_vel_error > -velocity_deadband):
+                filtered_y_vel_error = 0
 
             # Velocity Error Clamp
-            velocity_clamp = 50
-            if(x_vel_error > velocity_clamp):
-                x_vel_error = velocity_clamp
+            velocity_clamp = 60
+            if(filtered_x_vel_error > velocity_clamp):
+                filtered_x_vel_error = velocity_clamp
 
-            if(x_vel_error < -1*velocity_clamp):
-                x_vel_error = -1*velocity_clamp
+            if(filtered_x_vel_error < -1*velocity_clamp):
+                filtered_x_vel_error = -1*velocity_clamp
 
-            if(y_vel_error > velocity_clamp):
-                y_vel_error = velocity_clamp
+            if(filtered_y_vel_error > velocity_clamp):
+                filtered_y_vel_error = velocity_clamp
 
-            if(y_vel_error < -1*velocity_clamp):
-                y_vel_error = -1*velocity_clamp
+            if(filtered_y_vel_error < -1*velocity_clamp):
+                filtered_y_vel_error = -1*velocity_clamp
 
+            # Cumulative Erorr
+            cumulative_roll_err  += roll_err
+            cumulative_pitch_err += pitch_err
 
             # Clamp Cumulative Eror {Mitigate Integral Windup}
             integral_clamp = 20000
@@ -147,8 +159,8 @@ def main() -> None:
                     cumulative_pitch_err = integral_clamp
 
             # Calculate the PID Output 
-            roll_out  = kp_roll*roll_err   + kd_roll*x_vel_error  + ki_roll*cumulative_roll_err
-            pitch_out = kp_pitch*pitch_err + kd_pitch*y_vel_error + ki_pitch*cumulative_pitch_err 
+            roll_out  = kp_roll*roll_err   + kd_roll *filtered_x_vel_error  + ki_roll*cumulative_roll_err
+            pitch_out = kp_pitch*pitch_err + kd_pitch*filtered_y_vel_error + ki_pitch*cumulative_pitch_err 
 
             # Roll and Pitch Output Clamp
             clamp_val = 8
@@ -163,7 +175,7 @@ def main() -> None:
 
             print(float("{:.2f}".format(roll_out)), float("{:.2f}".format(pitch_out)), 
                   float("{:.2f}".format(roll_err)), float("{:.2f}".format(pitch_err)),
-                  float("{:.2f}".format(x_vel_error)), float("{:.2f}".format(y_vel_error)),
+                  float("{:.2f}".format(filtered_x_vel_error)), float("{:.2f}".format(filtered_y_vel_error)),
                   float("{:.2f}".format(cumulative_roll_err)), float("{:.2f}".format(cumulative_pitch_err)),
                   float("{:.2f}".format(servo_angles[0])), float("{:.2f}".format(servo_angles[1])), float("{:.2f}".format(servo_angles[2])))
             
