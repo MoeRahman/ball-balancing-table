@@ -42,7 +42,7 @@ Throughout the years of this project I only had one question, how do you get a m
 </p>
 
 <p align="center">
-  <img src="https://github.com/MoeRahman/ball-balancing-table/blob/main/videos/github-readme.gif?raw=true" width="600" />
+  <img src="https://github.com/MoeRahman/ball-balancing-table/blob/main/videos/ball-balance-dramatic-fixed-titlt.gif?raw=true" width="600" />
 </p>
 
 <h2 
