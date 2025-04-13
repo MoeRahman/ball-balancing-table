@@ -1,4 +1,4 @@
-"""Module allows to track a circular object captured on video"""
+"""This Module tracks circular objects captured on video"""
 
 from typing import Type, Tuple
 import cv2 as cv
