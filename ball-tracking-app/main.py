@@ -173,11 +173,11 @@ def main() -> None:
             servo_angles = ik.calculate_joint_angles(roll=roll_out, pitch=pitch_out, height=height)
             servo_angles = np.around(servo_angles, decimals=2) + servo_offsets
 
-            print(float("{:.2f}".format(roll_out)), float("{:.2f}".format(pitch_out)), 
-                  float("{:.2f}".format(roll_err)), float("{:.2f}".format(pitch_err)),
-                  float("{:.2f}".format(filtered_x_vel_error)), float("{:.2f}".format(filtered_y_vel_error)),
-                  float("{:.2f}".format(cumulative_roll_err)), float("{:.2f}".format(cumulative_pitch_err)),
-                  float("{:.2f}".format(servo_angles[0])), float("{:.2f}".format(servo_angles[1])), float("{:.2f}".format(servo_angles[2])))
+            # print(float("{:.2f}".format(roll_out)), float("{:.2f}".format(pitch_out)), 
+            #       float("{:.2f}".format(roll_err)), float("{:.2f}".format(pitch_err)),
+            #       float("{:.2f}".format(filtered_x_vel_error)), float("{:.2f}".format(filtered_y_vel_error)),
+            #       float("{:.2f}".format(cumulative_roll_err)), float("{:.2f}".format(cumulative_pitch_err)),
+            #       float("{:.2f}".format(servo_angles[0])), float("{:.2f}".format(servo_angles[1])), float("{:.2f}".format(servo_angles[2])))
             
             # To avoid the issue with Nan values we can just round those numbers to 90 deg
             servo_angles = [90.0 if math.isnan(val) else val for val in servo_angles]
