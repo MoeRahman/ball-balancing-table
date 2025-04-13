@@ -54,5 +54,6 @@ Throughout the years of this project I only had one question, how do you get a m
 
 <ul>
     <li><a href="https://www.youtube.com/watch?v=57DbEEBF7sE">Johan Link's Original Video</a> <- Video Inspiration</li>
-    <li><a href="https://www.ba-bot.com/">BABOT website</a><-Johan Link's Website</li>
+    <li><a href="https://www.ba-bot.com/">BABOT website</a> <- Johan Link's Website</li>
+    <li><a href="https://github.com/faisaltameesh/spikerc/blob/master/gamepad.py">spikerc gamepad.py </a> <- XBox Controller Class </li>
 </ul>
