@@ -192,7 +192,8 @@ def ball_balance(plot_window: ControlsWindow, controller: XboxController, video_
 
         # Plot data for controls analysis
         plot_window.update_data(t, plot1 = [position_setpoint[0], predicted_position[0]],
-                                   plot2 = [position_setpoint[1], predicted_position[1]])
+                                   plot2 = [position_setpoint[1], predicted_position[1]],
+                                   plot3 = [x_vel_error, filtered_x_vel_error])
 
         # Reference lines to align the platform
         for angle in range(30,275,120):
