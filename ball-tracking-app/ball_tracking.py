@@ -93,6 +93,7 @@ def kalmanInit() -> Type[cv.KalmanFilter]:
     Kalman = cv.KalmanFilter(dynamParams=4, measureParams=2)
 
     # Transition Matrix (A) - State Transition Matrix (position & velocity)
+    # TODO Update State Transition Matrix to handle variable time steps -> dt
     Kalman.transitionMatrix = np.array([[1, 0, 1, 0],
                                         [0, 1, 0, 1],
                                         [0, 0, 1, 0],
