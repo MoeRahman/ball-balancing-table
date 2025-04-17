@@ -53,9 +53,9 @@ class ControlsWindow(QMainWindow):
         self.data4 = []
 
     def update_data(self, t, plot1, plot2):
-        max_len = 100
+        window_len = 100
 
-        if len(self.t) >= max_len:
+        if len(self.t) >= window_len:
             self.t.pop(0)
             self.data1.pop(0)
             self.data2.pop(0)
