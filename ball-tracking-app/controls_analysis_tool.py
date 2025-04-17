@@ -25,18 +25,19 @@ class ControlsWindow(QMainWindow):
         self.pairs = [
             ['x-setpoint', 'x-measurement'],
             ['y-setpoint', 'y-measurement'],
-            ['x-velocity', 'y-velocity']
+            ['x-velocity', 'y-velocity'],
+            ['roll_out', 'pitch_out']
         ]
         titles = [
-            'X-Axis', 'Y-Axis', 'Velocity Estimate'
+            'X-Axis', 'Y-Axis', 
+            'Velocity Estimate', 'Control Output'
         ]
 
         for i, (col1, col2) in enumerate(self.pairs):
             plot = pg.PlotWidget(background='w')
             plot.showGrid(x=True, y=True)
             plot.setTitle(titles[i])
-            plot.setLabel('left', 'Value')
-            plot.setLabel('bottom', 'Time Step')
+            plot.setLabel('bottom', 'Time(sec)')
             plot.addLegend()
 
             curve1 = plot.plot(pen=pg.mkPen('r', width=2), name=col1)
@@ -55,8 +56,10 @@ class ControlsWindow(QMainWindow):
         self.data4 = []
         self.x_vel = []
         self.y_vel = []
+        self.r_out = []
+        self.p_out = []
 
-    def update_data(self, t, plot1, plot2, plot3):
+    def update_data(self, t, plot1, plot2, plot3, plot4):
         window_len = 100
 
         if len(self.t) >= window_len:
@@ -67,6 +70,8 @@ class ControlsWindow(QMainWindow):
             self.data4.pop(0)
             self.x_vel.pop(0)
             self.y_vel.pop(0)
+            self.r_out.pop(0)
+            self.p_out.pop(0)
 
         self.t.append(t)
         self.data1.append(plot1[0])
@@ -75,6 +80,8 @@ class ControlsWindow(QMainWindow):
         self.data4.append(plot2[1])
         self.x_vel.append(plot3[0])
         self.y_vel.append(plot3[1])
+        self.r_out.append(plot4[0])
+        self.p_out.append(plot4[1])
 
         for i, _ in enumerate(self.pairs):
             curve1, curve2 = self.curves[i]
@@ -89,10 +96,12 @@ class ControlsWindow(QMainWindow):
                 case 2:
                     y1 = self.x_vel
                     y2 = self.y_vel
+                case 3:
+                    y1 = self.r_out
+                    y2 = self.p_out
 
-            x = list(range(len(y1)))
-            curve1.setData(x, y1)
-            curve2.setData(x, y2)
+            curve1.setData(self.t, y1)
+            curve2.setData(self.t, y2)
 
 
 def main():
@@ -114,8 +123,11 @@ def main():
         y_meas = y_set + 5 * math.sin(0.2 * t)
         x_vel = 10 * math.sin(0.2 * t)
         y_vel = 10 * math.cos(0.2 * t)
+        r_out = math.cos(0.25 * t)
+        p_out = math.sin(0.25 * t + 3) + 0.5
 
-        win.update_data(t, [x_set, x_meas], [y_set, y_meas], [x_vel, y_vel])
+        win.update_data(t, [x_set, x_meas], [y_set, y_meas], 
+                           [x_vel, y_vel],  [r_out, p_out])
         t += 1
 
     timer.timeout.connect(update)

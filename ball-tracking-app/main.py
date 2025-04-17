@@ -20,15 +20,15 @@ pitch_err = 0
 x_vel_error = 0
 y_vel_error = 0
 
-alpha = 1
+alpha = 0.9
 prev_x_vel_error = 0
 prev_y_vel_error = 0
 
 cumulative_roll_err = 0
 cumulative_pitch_err = 0
 
-kp_roll  = 0.01
-kp_pitch = 0.01
+kp_roll  = 0.02
+kp_pitch = 0.02
 kd_roll  = 0.1
 kd_pitch = 0.1
 ki_roll  = 0
@@ -48,9 +48,10 @@ def ball_balance(plot_window: ControlsWindow, controller: XboxController, video_
     global servo_offsets
     global filtered_coordinates
     global prev_point
+    total_time = 0
 
     while True:
-        t = time.perf_counter()
+        start_time = time.time()
 
         position_setpoint = [200 * controller.read()[0], 200 * controller.read()[1]]
         reset_position = controller.read()[2]
@@ -190,10 +191,15 @@ def ball_balance(plot_window: ControlsWindow, controller: XboxController, video_
         cv.circle(img=frame, center=(predicted_position[0].astype(int)+500, predicted_position[1].astype(int)+500), radius=2, color=(255,0,0), lineType=cv.LINE_AA, thickness=2)
         cv.putText(img=frame, text=coordinate_display, org=(predicted_position[0].astype(int)+540, predicted_position[1].astype(int)+540), fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1, color=(0, 0, 0), lineType=cv.LINE_AA, thickness=1)
 
+        end_time = time.time()
+        total_time += end_time - start_time
+
         # Plot data for controls analysis
-        plot_window.update_data(t, plot1 = [position_setpoint[0], predicted_position[0]],
-                                   plot2 = [position_setpoint[1], predicted_position[1]],
-                                   plot3 = [x_vel_error, filtered_x_vel_error])
+        # TODO add pause button feature to view plot at critical moments
+        plot_window.update_data(total_time, plot1 = [position_setpoint[0], predicted_position[0]],
+                                            plot2 = [position_setpoint[1], predicted_position[1]],
+                                            plot3 = [filtered_x_vel_error, filtered_y_vel_error],
+                                            plot4 = [roll_out, pitch_out])
 
         # Reference lines to align the platform
         for angle in range(30,275,120):
