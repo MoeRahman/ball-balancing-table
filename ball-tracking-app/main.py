@@ -51,8 +51,12 @@ def ball_balance(plot_window: ControlsWindow, controller: XboxController, video_
     total_time = 0
 
     while True:
+
+        # TODO: Move control-system procedure in separte python module
+        # TODO: Develope generic state space model to allow quick swapping between various control schemes: LQR, Robust controls etc
         start_time = time.time()
 
+        # TODO: Make the XBox Controller Optional, Program should not crash if controller not detected
         position_setpoint = [200 * controller.read()[0], 200 * controller.read()[1]]
         reset_position = controller.read()[2]
 
@@ -72,10 +76,11 @@ def ball_balance(plot_window: ControlsWindow, controller: XboxController, video_
         
         prev_point = coordinate_measurement
 
-        filtered_coordinates.predict()
+        filtered_coordinates.predict()    
         filtered_coordinates.correct(measurement=coordinate_measurement)
         predicted_position = filtered_coordinates.statePost
 
+        # TODO create better tuning method that does not interupt system: threading? 
         if cv.waitKey(1) & 0xFF == ord('u'):
             # Update Kp Gain
             kp_roll = float(input("Kp:\t"))
@@ -217,8 +222,6 @@ def ball_balance(plot_window: ControlsWindow, controller: XboxController, video_
             arduino_serial.close()
             break
 
-    
-
     video_capture.release()
     cv.destroyAllWindows()
 
@@ -235,6 +238,7 @@ def main():
 
     video_capture = VideoCapture(0)
 
+    #TODO: Autodetect Comm Port 
     arduino_serial = serial.Serial(port='COM13', baudrate=115200, timeout=0.1)
 
     if arduino_serial.is_open:
@@ -249,4 +253,5 @@ def main():
     sys.exit(app.exec_())
 
 
-main()
+if __name__ == "__main__":
+    main()

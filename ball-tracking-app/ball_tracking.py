@@ -72,7 +72,7 @@ def track(capture:Type[cv.VideoCapture]) -> Tuple[bool, np.ndarray]:
 
     return ret, np.array([prevCircle[0].astype(float)-500, prevCircle[1].astype(float)-500])
 
-
+# TODO: Develope System Model for Full State Feedback Control
 def kalmanInit() -> Type[cv.KalmanFilter]:
 
     """
